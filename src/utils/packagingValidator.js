@@ -177,7 +177,7 @@ export function parseBiscuitAndPackageText(ocrText, originalData = {}) {
   }
 
   // 2. Extract MRP
-  const mrpMatch = text.match(/(?:mrp|?|rs\.?|price)[\s:]*([?\d.,]+)/i);
+  const mrpMatch = text.match(/(?:mrp|rs\.?|price|₹)[\s:]*([₹\d.,]+)/i);
   if (mrpMatch && mrpMatch[1]) {
     const val = mrpMatch[1].replace(/[^0-9.]/g, '');
     if (val) result.mrp = `? ${parseFloat(val).toFixed(2)}`;
