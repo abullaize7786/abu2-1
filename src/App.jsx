@@ -186,6 +186,84 @@ export default function App() {
     handleSaveProductData(qrData, snapshot || null);
   };
 
+  const handleDeleteScan = (scanId) => {
+    const updated = scanHistory.filter((s) => s.id !== scanId);
+    setScanHistory(updated);
+
+    const isCurrentActive = complianceChecks?.reportId === scanId;
+    const nextProduct = isCurrentActive ? null : productData;
+    const nextImage = isCurrentActive ? null : capturedImage;
+    const nextFlags = isCurrentActive ? [] : flags;
+    const nextChecks = isCurrentActive ? null : complianceChecks;
+
+    if (isCurrentActive) {
+      setProductData(null);
+      setCapturedImage(null);
+      setFlags([]);
+      setSelectedFlag(null);
+      setComplianceChecks(null);
+    }
+
+    if (currentUser) {
+      saveUserData(currentUser, {
+        productData: nextProduct,
+        capturedImage: nextImage,
+        flags: nextFlags,
+        scanHistory: updated,
+        complianceChecks: nextChecks,
+      });
+    }
+  };
+
+  const handleDeleteReportAndClear = (reportId) => {
+    const updated = scanHistory.filter((s) => s.id !== reportId);
+    setScanHistory(updated);
+    setProductData(null);
+    setCapturedImage(null);
+    setFlags([]);
+    setSelectedFlag(null);
+    setComplianceChecks(null);
+    if (currentUser) {
+      saveUserData(currentUser, {
+        productData: null,
+        capturedImage: null,
+        flags: [],
+        scanHistory: updated,
+        complianceChecks: null,
+      });
+    }
+  };
+
+  const handleClearAllHistory = () => {
+    setScanHistory([]);
+    if (currentUser) {
+      saveUserData(currentUser, {
+        productData,
+        capturedImage,
+        flags,
+        scanHistory: [],
+        complianceChecks,
+      });
+    }
+  };
+
+  const handleClearCurrentScan = () => {
+    setProductData(null);
+    setCapturedImage(null);
+    setFlags([]);
+    setSelectedFlag(null);
+    setComplianceChecks(null);
+    if (currentUser) {
+      saveUserData(currentUser, {
+        productData: null,
+        capturedImage: null,
+        flags: [],
+        scanHistory,
+        complianceChecks: null,
+      });
+    }
+  };
+
   const handleSelectFlag = (flag) => {
     setSelectedFlag(flag);
   };
@@ -216,6 +294,7 @@ export default function App() {
             currentUser={currentUser}
             recentProduct={productData}
             recentFlagsCount={flags.length}
+            onCustomImageUpload={(url) => handleImageCaptured(url)}
           />
         );
 
@@ -306,6 +385,9 @@ export default function App() {
             flags={flags}
             historyScans={scanHistory}
             currentUser={currentUser}
+            onDeleteHistoryScan={handleDeleteScan}
+            onClearAllHistory={handleClearAllHistory}
+            onClearCurrentScan={handleClearCurrentScan}
           />
         );
 
@@ -321,6 +403,13 @@ export default function App() {
         return (
           <ComplianceReport
             onNavigate={handleNavigate}
+            complianceChecks={complianceChecks}
+            productData={productData}
+            flags={flags}
+            currentUser={currentUser}
+            onDeleteReport={(reportId) => {
+              handleDeleteReportAndClear(reportId);
+            }}
           />
         );
 
@@ -328,6 +417,10 @@ export default function App() {
         return (
           <ReportPreview
             onNavigate={handleNavigate}
+            complianceChecks={complianceChecks}
+            productData={productData}
+            flags={flags}
+            currentUser={currentUser}
           />
         );
 
