@@ -7,10 +7,7 @@ import {
   Camera,
   RefreshCw,
   CheckCircle2,
-  QrCode,
-  Upload,
-  UserX,
-  AlertTriangle
+  UserX
 } from 'lucide-react';
 import { detectCodeFromMedia, parseScannedCode } from '../utils/qrParser';
 import { detectHuman } from '../utils/humanDetector';
@@ -24,7 +21,7 @@ export default function ScanCamera({
   const [cameraFacing, setCameraFacing] = useState('environment'); // 'environment' (back) | 'user' (front)
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
-  const [isScanning, setIsScanning] = useState(true);
+  const [isScanning] = useState(true);
   const [detectedQR, setDetectedQR] = useState(null);
   const [humanError, setHumanError] = useState(null);
 
@@ -88,29 +85,12 @@ export default function ScanCamera({
     };
   }, [startCamera, cameraFacing]);
 
-  // Continuous scanning loop (QR/Barcode and Human Detection)
+  // Continuous scanning loop (QR/Barcode only)
   useEffect(() => {
     if (!cameraActive) return;
 
-    let tickCount = 0;
-
     scanIntervalRef.current = setInterval(async () => {
       if (!videoRef.current || videoRef.current.readyState < 2) return;
-
-      tickCount++;
-
-      // Check for human face / skin presence periodically (every ~1.2s)
-      if (tickCount % 4 === 0) {
-        try {
-          const humanCheck = await detectHuman(videoRef.current);
-          if (humanCheck && humanCheck.isHuman) {
-            setHumanError('Human / Person detected! Legal Metrology inspections are strictly for packaged commodities and product labels only.');
-            return;
-          }
-        } catch (err) {
-          // ignore check ticks
-        }
-      }
 
       // Check for QR / Barcode
       try {
@@ -177,7 +157,7 @@ export default function ScanCamera({
       // Verify that the frame does not contain a human
       const humanCheck = await detectHuman(canvas);
       if (humanCheck && humanCheck.isHuman) {
-        setHumanError('Human / Person detected! Please point the camera at a packaged product or commodity label.');
+        setHumanError('Human / Person detected! Legal Metrology inspections are strictly for packaged commodities and product labels only.');
         return;
       }
 
